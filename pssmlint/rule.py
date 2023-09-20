@@ -1,19 +1,18 @@
 from typing import Callable
 
-from apssdag.connection import Connection
-
+from pssmlint.edge import Edge
 from pssmlint.violations import ViolationType
 
 
 class PssmLintRule:
-    VisitConnectionHook = Callable[[Connection], ViolationType | None]
+    VisitEdgeHook = Callable[[Edge], ViolationType | None]
     name: str
-    visit_connection_hooks: list[VisitConnectionHook]
+    visit_edge_hooks: list[VisitEdgeHook]
 
     def __init__(self, name: str):
         self.name = name
-        self.visit_connection_hooks = []
+        self.visit_edge_hooks = []
 
-    def visit_connection(self, hook: VisitConnectionHook):
-        self.visit_connection_hooks.append(hook)
+    def visit_edge(self, hook: VisitEdgeHook):
+        self.visit_edge_hooks.append(hook)
         return self

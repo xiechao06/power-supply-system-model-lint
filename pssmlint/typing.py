@@ -6,4 +6,4 @@
 
 # ViolationType = ConnectionViolation
 
-# VisitConnectionHook = Callable[[Connection], ViolationType | None]
+# VisitEdgeHook = Callable[[Connection], ViolationType | None]

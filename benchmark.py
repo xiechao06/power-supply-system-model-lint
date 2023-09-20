@@ -24,7 +24,7 @@ from pssmlint.exceptions import LintError
 from pssmlint.linter import PssmLinter
 from pssmlint.plugin import PssmLintPlugin
 from pssmlint.rule import PssmLintRule
-from pssmlint.violations import ConnectionViolation
+from pssmlint.violations import Edge
 
 
 def gen_dag(
@@ -63,7 +63,7 @@ def gen_dag(
 def redundancy_check(rule_name: str, i: int):
     def _redundancy_check(conn: Connection):
         if conn.extras and conn.extras.get("redundancy") == i:
-            return ConnectionViolation(
+            return Edge(
                 message=f"redundancy should be {i}", rule=rule_name, connection=conn
             )
 
@@ -74,7 +74,7 @@ def build_plugins() -> list[PssmLintPlugin]:
     plugins = []
     for i in range(30):
         rule_name = f"redundancy should be {i}"
-        rule = PssmLintRule(rule_name).visit_connection(redundancy_check(rule_name, i))
+        rule = PssmLintRule(rule_name).visit_edge(redundancy_check(rule_name, i))
         plugin = PssmLintPlugin(f"plugin {i}", rule)
         plugins.append(plugin)
 

@@ -1,4 +1,4 @@
-from apssdag.connection import Connection
+from pssmlint.edge import Edge
 
 
 class BaseViolation:
@@ -10,12 +10,13 @@ class BaseViolation:
         self.rule = rule
 
 
-class ConnectionViolation(BaseViolation):
-    connection: Connection
+class EdgeViolation(BaseViolation):
+    edge: Edge
 
-    def __init__(self, message: str, rule: str, connection: Connection):
+    def __init__(self, message: str, rule: str, edge: Edge):
         super().__init__(message, rule)
-        self.connection = connection
+        self.edge = edge
 
 
-ViolationType = ConnectionViolation
+ViolationType = EdgeViolation
+ViolationType = EdgeViolation
