@@ -1,34 +1,37 @@
-from itertools import chain
 from typing import Callable
 
-from apssdag.connection import Connection
-from apssdag.dag import AbstractPowerSupplySystemDag
+from apssdag.graph import AbstractPowerSupplySystemGraph
 
+from pssmlint.edge import Edge
 from pssmlint.exceptions import LintError
 from pssmlint.plugin import PssmLintPlugin
 from pssmlint.rule import PssmLintRule
 from pssmlint.violations import ViolationType
 
-VisitConnectionHook = Callable[[Connection], ViolationType | None]
+VisitEdgeHook = Callable[[Edge], ViolationType | None]
 
 
 class PssmLinter:
     plugins: tuple[PssmLintPlugin, ...]
 
-    _visit_connection_hooks: tuple[tuple[PssmLintRule, VisitConnectionHook], ...]
+    _visit_edge_hooks: list[tuple[PssmLintRule, VisitEdgeHook]]
 
     def __init__(self, *plugins: PssmLintPlugin) -> None:
         assert len(plugins) > 0, "You should provide at least 1 plugin"
         self.plugins = plugins
-        self._visit_connection_hooks = tuple(
-            chain.from_iterable(plugin.visit_connection_hooks for plugin in plugins)
-        )
+        self._visit_edge_hooks = []
+        for plugin in plugins:
+            for hook in plugin.visit_edge_hooks:
+                self._visit_edge_hooks.append(hook)
 
-    def lint(self, dag: AbstractPowerSupplySystemDag):
+    def lint(self, graph: AbstractPowerSupplySystemGraph):
         violations: list[ViolationType] = []
-        for _, hook in self._visit_connection_hooks:
-            for conn in chain.from_iterable(dag.conns.values()):
-                if violation := hook(conn):
+        for _, hook in self._visit_edge_hooks:
+            for vanilla_edge in graph.edges:
+                from_ = graph.nodes[vanilla_edge.from_].device
+                to = graph.nodes[vanilla_edge.to].device
+                edge = Edge(from_=from_, to=to, extras=vanilla_edge.extras)
+                if violation := hook(edge):
                     violations.append(violation)
 
         if violations:

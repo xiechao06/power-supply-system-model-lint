@@ -1,10 +1,10 @@
-from pssmlint.violations import ConnectionViolation
+from pssmlint.violations import EdgeViolation
 
 
 class LintError(Exception):
-    violations: list[ConnectionViolation]
+    violations: list[EdgeViolation]
 
-    def __init__(self, violations: list[ConnectionViolation]):
+    def __init__(self, violations: list[EdgeViolation]):
         super().__init__()
 
         self.violations = violations
