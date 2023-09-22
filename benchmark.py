@@ -9,14 +9,13 @@
 import time
 from typing import NamedTuple
 
-from apssdag.devices.bus import Bus
-from apssdag.devices.dc_dc_converter import DcDc
-from apssdag.devices.load import Load
-from apssdag.devices.power_supply import PowerSupply
-from apssdag.devices.switch import Switch
-from apssdag.graph import AbstractPowerSupplySystemGraph
+from apssm.devices.bus import Bus
+from apssm.devices.dc_dc import DcDc
+from apssm.devices.load import Load
+from apssm.devices.power_supply import PowerSupply
+from apssm.devices.switch import Switch
+from apssm.graph import AbstractPowerSupplySystemGraph
 from tabulate import tabulate
-from tqdm import tqdm
 
 from pssmlint.edge import Edge
 from pssmlint.exceptions import LintError
@@ -38,21 +37,23 @@ def gen_graph(
         bus_name = f"bus_{i}"
         graph.add_device(PowerSupply(power_supply_name))
         graph.add_device(Switch(switch_name))
-        graph.add_edge(from_=power_supply_name, to=switch_name)
+        graph.add_edge(first=(power_supply_name, 0), second=(switch_name, 0))
 
         graph.add_device(DcDc(dc_dc_name))
-        graph.add_edge(from_=switch_name, to=dc_dc_name)
+        graph.add_edge(first=(switch_name, 1), second=(dc_dc_name, 0))
 
         graph.add_device(Bus(bus_name))
-        graph.add_edge(from_=dc_dc_name, to=bus_name)
+        graph.add_edge(first=(dc_dc_name, 1), second=(bus_name, 0))
 
         for j in range(loads_under_bus):
             switch_name = f"switch_1_{i}_{j}"
             load_name = f"load_{i}_{j}"
             graph.add_device(Switch(switch_name))
-            graph.add_edge(from_=bus_name, to=switch_name)
+            graph.add_edge(first=(bus_name, 0), second=(switch_name, 0))
             graph.add_device(Load(load_name))
-            graph.add_edge(from_=switch_name, to=load_name, extras={"redundancy": j})
+            graph.add_edge(
+                first=(switch_name, 1), second=(load_name, 0), extras={"redundancy": j}
+            )
 
     return graph
 
@@ -107,7 +108,7 @@ def main():
         start = time.time()
         try:
             linter = PssmLinter(*plugins)
-            for _ in tqdm(range(profile.runs)):
+            for _ in range(profile.runs):
                 linter.lint(graph)
         except LintError:
             pass
@@ -116,7 +117,7 @@ def main():
             Benchmark(
                 total_in_ns=duration,
                 avg_in_ns=round(duration / profile.runs),
-                nodes=len(graph.nodes),
+                nodes=len(graph.devices),
                 edges=len(graph.edges),
                 runs=profile.runs,
             )

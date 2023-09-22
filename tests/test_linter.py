@@ -1,9 +1,10 @@
 import re
 
 import pytest
-from apssdag.devices.power_supply import PowerSupply
-from apssdag.devices.switch import Switch
-from apssdag.graph import AbstractPowerSupplySystemGraph
+from apssm.devices.power_supply import PowerSupply
+from apssm.devices.switch import Switch
+from apssm.gen_port_id import gen_port_id
+from apssm.graph import AbstractPowerSupplySystemGraph
 
 from pssmlint.edge import Edge
 from pssmlint.exceptions import LintError
@@ -18,23 +19,28 @@ def test_linter():
     graph.add_device(PowerSupply("power_supply_1"))
     graph.add_device(Switch("switch_1"))
     graph.add_edge(
-        from_="power_supply_1", to="switch_1", extras={"cool": False, "awesome": True}
+        first=("power_supply_1", 0),
+        second=("switch_1", 0),
+        extras={"cool": False, "awesome": True},
     )
 
     def be_cool(conn: Edge):
         if not conn.extras["cool"]:
+            first = gen_port_id(conn.first[0].name, conn.first[1])
+            second = gen_port_id(conn.second[0].name, conn.second[1])
+
             return EdgeViolation(
-                f"connection from {conn.from_.name} to "
-                f"{conn.to.name} should be cool",
+                f"connection from {first} to " f"{second} should be cool",
                 "be cool",
                 conn,
             )
 
     def be_awesome(conn: Edge):
         if not conn.extras["awesome"]:
+            first = gen_port_id(conn.first[0].name, conn.first[1])
+            second = gen_port_id(conn.second[0].name, conn.second[1])
             return EdgeViolation(
-                f"connection from {conn.from_.name} to "
-                f"{conn.to.name} should be awesome",
+                f"connection from {first} to " f"{second} should be awesome",
                 "be awesome",
                 conn,
             )

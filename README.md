@@ -20,3 +20,7 @@ Install [rye](https://rye-up.com/guide/installation/), then:
 rye sync
 pytest
 ```
+
+## Benchmark
+
+![Alt text](assets/benchmark.png)

@@ -1,6 +1,6 @@
 from typing import Callable
 
-from apssdag.graph import AbstractPowerSupplySystemGraph
+from apssm.graph import AbstractPowerSupplySystemGraph
 
 from pssmlint.edge import Edge
 from pssmlint.exceptions import LintError
@@ -27,10 +27,10 @@ class PssmLinter:
     def lint(self, graph: AbstractPowerSupplySystemGraph):
         violations: list[ViolationType] = []
         for _, hook in self._visit_edge_hooks:
-            for vanilla_edge in graph.edges:
-                from_ = graph.nodes[vanilla_edge.from_].device
-                to = graph.nodes[vanilla_edge.to].device
-                edge = Edge(from_=from_, to=to, extras=vanilla_edge.extras)
+            for first_, second_, extras in graph.edges:
+                first = (first_.device, first_.index)
+                second = (second_.device, second_.index)
+                edge = Edge(first=first, second=second, extras=extras)
                 if violation := hook(edge):
                     violations.append(violation)
 
