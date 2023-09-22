@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import Any
 
-from apssdag.typings import DeviceType
+from apssm.typing import DeviceType
 
 
 @dataclass
 class Edge:
-    from_: DeviceType
-    to: DeviceType
+    first: tuple[DeviceType, int]
+    second: tuple[DeviceType, int]
     extras: Any
